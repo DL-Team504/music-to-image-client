@@ -25,7 +25,7 @@ export type CreationDialogProps = {
 } & Omit<DialogProps, "children" | "open" | "onClose">;
 
 const MIN_DURATION = 10;
-const MAX_DURATION = 30;
+const MAX_DURATION = 60;
 
 export default function CreationDialog(props: CreationDialogProps) {
   const { onClose, ...rest } = props;
@@ -83,6 +83,8 @@ export default function CreationDialog(props: CreationDialogProps) {
     newValue: number | number[],
     activeThumb: number
   ) => {
+    console.log(event);
+
     if (!Array.isArray(newValue)) {
       return;
     }
@@ -116,7 +118,8 @@ export default function CreationDialog(props: CreationDialogProps) {
   const _onClose: NonNullable<DialogProps["onClose"]> = (e, reason) => {
     setFile(null);
     setImageStyle("");
-    onClose(e, reason);navigate
+    onClose(e, reason);
+    navigate;
     reset();
     setGeneratedImageUrl(undefined);
   };
