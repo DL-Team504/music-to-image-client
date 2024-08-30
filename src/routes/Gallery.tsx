@@ -1,9 +1,7 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import axios from "axios";
-
 import { useQuery } from "@tanstack/react-query";
-
 import { SongCard } from "@/Components";
 
 type GeneratedImage = {
@@ -16,7 +14,6 @@ const fetchImages = async () => {
   const res = await axios.get<GeneratedImage[]>(
     "http://localhost:8000/gallery/images"
   );
-
   return res.data;
 };
 
@@ -27,11 +24,18 @@ export default function Gallery() {
   });
 
   return (
-    <Box paddingX={6}>
-      <Grid container ml="auto" mr="right" spacing={2}>
+    <Box
+      sx={{
+        paddingX: 6,
+        paddingTop: 2,
+        marginTop: "5vh",
+        overflowY: "hidden",
+      }}
+    >
+      <Grid container spacing={2}>
         {images &&
-          images.map((image) => (
-            <Grid lg={3} md={4} sm={6}>
+          images.map((image, index) => (
+            <Grid lg={3} md={4} sm={6} key={index}>
               <SongCard
                 imgSrc={image.path}
                 title={image.title}

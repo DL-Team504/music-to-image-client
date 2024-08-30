@@ -12,7 +12,7 @@ import "@fontsource/inter";
 
 import { createBrowserRouter } from "react-router-dom";
 
-import { Root, Home, Gallery } from "@/routes";
+import { Root, Home, Gallery, Upload } from "@/routes";
 import ErrorPage from "./ErrorPage";
 
 const queryClient = new QueryClient();
@@ -26,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: "",
         element: <Home />,
+      },
+      {
+        path: "/upload",
+        element: <Upload />,
       },
       {
         path: "/gallery",
