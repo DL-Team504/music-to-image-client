@@ -11,7 +11,6 @@ import { useDropzone } from "react-dropzone";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
-
 import useUploadAudio from "./useUploadAudio";
 import { Card, CardMedia, LinearProgress, TextField } from "@mui/material";
 
@@ -25,7 +24,7 @@ export type CreationDialogProps = {
 } & Omit<DialogProps, "children" | "open" | "onClose">;
 
 const MIN_DURATION = 10;
-const MAX_DURATION = 30;
+const MAX_DURATION = 60;
 
 export default function CreationDialog(props: CreationDialogProps) {
   const { onClose, ...rest } = props;
@@ -48,13 +47,33 @@ export default function CreationDialog(props: CreationDialogProps) {
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     noClick: true,
-    onDrop: (acceptedFiles) => {
-      const preview = URL.createObjectURL(acceptedFiles[0]);
+    accept: {
+      "audio/mpeg": [".mp3"], // Ensure the dropzone only accepts mp3 files
+    },
+    onDrop: (acceptedFiles, fileRejections) => {
+      if (fileRejections.length > 0) {
+        console.error(`File ${file?.name} is not supported.`);
+        alert("Unsupported file type. Please upload an MP3 file.");
+        return;
+      }
+
+      if (acceptedFiles.length === 0) {
+        console.log("No files accepted");
+        return;
+      }
+
+      const selectedFile = acceptedFiles[0];
+      const preview = URL.createObjectURL(selectedFile);
       const audio = document.createElement("audio");
 
       audio.src = preview;
       audio.addEventListener("loadedmetadata", () => {
-        setFile(Object.assign(acceptedFiles[0], { duration: audio.duration }));
+        setFile(Object.assign(selectedFile, { duration: audio.duration }));
+        URL.revokeObjectURL(preview); // Clean up object URL
+      });
+
+      audio.addEventListener("error", () => {
+        console.error("Error loading audio file");
         URL.revokeObjectURL(preview);
       });
     },
@@ -64,7 +83,7 @@ export default function CreationDialog(props: CreationDialogProps) {
 
   useEffect(() => {
     if (file !== null) {
-      setFocusArea([0, Math.min(file.duration, 30)]);
+      setFocusArea([0, Math.min(file.duration, 60)]);
     } else {
       setFocusArea([0, 1]);
     }
@@ -116,7 +135,8 @@ export default function CreationDialog(props: CreationDialogProps) {
   const _onClose: NonNullable<DialogProps["onClose"]> = (e, reason) => {
     setFile(null);
     setImageStyle("");
-    onClose(e, reason);navigate
+    onClose(e, reason);
+    navigate;
     reset();
     setGeneratedImageUrl(undefined);
   };
