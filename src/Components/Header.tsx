@@ -12,9 +12,9 @@ export default function Header() {
   const theme = useTheme();
   const [creationDialogOpen, setCreationDialogOpen] = useState(false);
 
-  // const { pathname } = useLocation();
   const isHome = useMatch("/");
   const isGallery = useMatch("/gallery");
+  const isUpload = useMatch("/upload");
 
   const onStartNowClick = () => {
     setCreationDialogOpen(true);
@@ -25,7 +25,18 @@ export default function Header() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }} marginBottom={10} marginTop={3}>
+    <Box
+      sx={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        backgroundColor: theme.palette.background.paper,
+        zIndex: 1000,
+        padding: "1rem",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      }}
+    >
       <Grid container alignItems="center">
         <Grid xs={3}>
           <Box justifyContent="center" alignItems="center" padding={2}>
@@ -34,8 +45,8 @@ export default function Header() {
               textAlign="center"
               sx={{
                 background: `-webkit-linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.light} 80%);`,
-                "-webkit-background-clip": "text",
-                "-webkit-text-fill-color": "transparent",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
               }}
             >
               LunarBeats
@@ -52,14 +63,19 @@ export default function Header() {
               Home
             </Button>
             <Button
+              variant={isUpload ? "contained" : "outlined"}
+              component={NavLink}
+              to="/upload"
+            >
+              Upload
+            </Button>
+            <Button
               variant={isGallery ? "contained" : "outlined"}
               component={NavLink}
               to="/gallery"
             >
               Gallery
             </Button>
-            <Button variant="outlined">Pricing</Button>
-            <Button variant="outlined">About</Button>
           </Stack>
         </Grid>
         <Grid xs={3}>

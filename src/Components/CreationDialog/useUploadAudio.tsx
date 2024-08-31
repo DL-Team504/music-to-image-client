@@ -11,15 +11,14 @@ export interface FileArgs {
 export default function useUploadAudio() {
   const [progress, setProgress] = useState<number | null>(0);
 
-  const {
-    data: generatedImageUrl,
-    mutate: uploadAudio,
-    mutateAsync: uploadAudioAsync,
-    ...restUseMutation
-  } = useMutation<string, AxiosError, FileArgs>({
-    mutationFn: ({ audio, imageStyle, focusArea }) => {
+  const { data, mutate, isPending, isSuccess } = useMutation<
+    string,
+    AxiosError,
+    FileArgs
+  >({
+    mutationFn: async ({ audio, imageStyle, focusArea }) => {
       return axios.post(
-        "DUMMY_URL",
+        "http://193.106.55.50:8888/generate-image",
         {
           start: focusArea[0],
           end: focusArea[1],
@@ -46,10 +45,10 @@ export default function useUploadAudio() {
   });
 
   return {
-    generatedImageUrl,
-    uploadAudio,
-    uploadAudioAsync,
+    generatedImageUrl: data,
+    uploadAudio: mutate,
+    isLoading: isPending,
+    isSuccess,
     progress,
-    ...restUseMutation,
   };
 }
