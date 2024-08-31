@@ -4,25 +4,14 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { useTheme } from "@mui/material/styles";
-import CreationDialog from "./CreationDialog";
-import { useState } from "react";
 import { useMatch, NavLink } from "react-router-dom";
 
 export default function Header() {
   const theme = useTheme();
-  const [creationDialogOpen, setCreationDialogOpen] = useState(false);
 
   const isHome = useMatch("/");
   const isGallery = useMatch("/gallery");
   const isUpload = useMatch("/upload");
-
-  const onStartNowClick = () => {
-    setCreationDialogOpen(true);
-  };
-
-  const onCreationDialogClose = () => {
-    setCreationDialogOpen(false);
-  };
 
   return (
     <Box
@@ -80,23 +69,12 @@ export default function Header() {
         </Grid>
         <Grid xs={3}>
           <Box justifyContent="center" alignItems="center" display="Flex">
-            <Button
-              size="large"
-              variant="contained"
-              color="secondary"
-              onClick={onStartNowClick}
-            >
+            <Button size="large" variant="contained" color="secondary">
               Start Now
             </Button>
           </Box>
         </Grid>
       </Grid>
-      <CreationDialog
-        open={creationDialogOpen}
-        onClose={onCreationDialogClose}
-        maxWidth="md"
-        fullWidth
-      />
     </Box>
   );
 }

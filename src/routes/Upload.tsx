@@ -95,6 +95,7 @@ export default function Upload() {
     newValue: number | number[],
     activeThumb: number
   ) => {
+    console.log(event);
     if (!Array.isArray(newValue)) {
       return;
     }
