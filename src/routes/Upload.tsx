@@ -1,3 +1,295 @@
+// import { useEffect, useState } from "react";
+// import Box from "@mui/material/Box";
+// import TextField from "@mui/material/TextField";
+// import Button from "@mui/material/Button";
+// import Typography from "@mui/material/Typography";
+// import { Slider, Stack, Card, CardMedia, LinearProgress } from "@mui/material";
+// import { useTheme } from "@mui/material/styles";
+// import { useDropzone } from "react-dropzone";
+// import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+// import LoadingButton from "@mui/lab/LoadingButton";
+// import { useNavigate } from "react-router-dom";
+// import { saveAs } from "file-saver";
+// import useUploadAudio from "@/Components/CreationDialog/useUploadAudio";
+// import { useYoutubeDownload } from "@/hooks/useYoutubeDownload";
+
+// interface AudioFile extends File {
+//   duration: number;
+// }
+
+// const MIN_DURATION = 10;
+// const MAX_DURATION = 60;
+
+// export default function Upload() {
+//   const theme = useTheme();
+//   const navigate = useNavigate();
+
+//   const [file, setFile] = useState<AudioFile | null>(null);
+//   const [focusArea, setFocusArea] = useState<[number, number]>([0, 1]);
+//   const [imageStyle, setImageStyle] = useState<string>("");
+//   const [youtubeUrl, setYoutubeUrl] = useState<string>("");
+//   const [showYoutubeInput, setShowYoutubeInput] = useState<boolean>(false);
+
+//   const { uploadAudio, isLoading, isSuccess, progress, generatedImageUrl } =
+//     useUploadAudio();
+//   const {
+//     isLoading: isDownloading,
+//     downloadedFile,
+//     downloadFromYoutube,
+//   } = useYoutubeDownload();
+
+//   const { getRootProps, getInputProps } = useDropzone({
+//     maxFiles: 1,
+//     accept: {
+//       "audio/mpeg": [".mp3"],
+//     },
+//     onDrop: (acceptedFiles) => {
+//       if (acceptedFiles.length === 0) {
+//         console.log("No files accepted");
+//         return;
+//       }
+//       handleFileUpload(acceptedFiles[0]);
+//     },
+//   });
+
+//   useEffect(() => {
+//     if (file !== null) {
+//       setFocusArea([0, Math.min(file.duration, 60)]);
+//     } else {
+//       setFocusArea([0, 1]);
+//     }
+//   }, [file]);
+
+//   useEffect(() => {
+//     if (downloadedFile) {
+//       handleFileUpload(downloadedFile);
+//     }
+//   }, [downloadedFile]);
+
+//   const handleFileUpload = (selectedFile: File) => {
+//     const preview = URL.createObjectURL(selectedFile);
+//     const audio = document.createElement("audio");
+
+//     audio.src = preview;
+//     audio.addEventListener("loadedmetadata", () => {
+//       setFile(Object.assign(selectedFile, { duration: audio.duration }));
+//       URL.revokeObjectURL(preview);
+//     });
+
+//     audio.addEventListener("error", () => {
+//       console.error("Error loading audio file");
+//       URL.revokeObjectURL(preview);
+//     });
+//   };
+
+//   function formatSecondsToTime(seconds: number) {
+//     if (file !== null && file.duration > 3600) {
+//       return new Date(seconds * 1000).toISOString().substring(11, 19);
+//     } else {
+//       return new Date(seconds * 1000).toISOString().substring(14, 19);
+//     }
+//   }
+
+//   const handleSliderChange = (
+//     event: Event,
+//     newValue: number | number[],
+//     activeThumb: number
+//   ) => {
+//     if (!Array.isArray(newValue)) {
+//       return;
+//     }
+
+//     if (file === null) {
+//       return;
+//     }
+
+//     if (newValue[1] - newValue[0] < MIN_DURATION) {
+//       if (activeThumb === 0) {
+//         const clamped = Math.min(newValue[0], file.duration - MIN_DURATION);
+//         setFocusArea([clamped, clamped + MIN_DURATION]);
+//       } else {
+//         const clamped = Math.max(newValue[1], MIN_DURATION);
+//         setFocusArea([clamped - MIN_DURATION, clamped]);
+//       }
+//     } else if (newValue[1] - newValue[0] > MAX_DURATION) {
+//       if (activeThumb === 0) {
+//         setFocusArea([
+//           newValue[0],
+//           Math.min(newValue[0] + MAX_DURATION, file.duration),
+//         ]);
+//       } else {
+//         setFocusArea([Math.max(newValue[1] - MAX_DURATION, 0), newValue[1]]);
+//       }
+//     } else {
+//       setFocusArea(newValue as [number, number]);
+//     }
+//   };
+
+//   const handleGenerate = () => {
+//     if (file === null) return;
+//     uploadAudio({ audio: file, focusArea, imageStyle });
+//   };
+
+//   const handleDownload = () => {
+//     if (!generatedImageUrl) return;
+//     saveAs(generatedImageUrl, "generated-image.jpg");
+//   };
+
+//   const handleAddToGallery = () => {
+//     // Simulate adding to gallery (actual backend integration needed)
+//     alert("Image added to gallery!");
+//     navigate("/gallery");
+//   };
+
+//   const handleNewSong = () => {
+//     // Reset all states to start fresh
+//     setFile(null);
+//     setFocusArea([0, 1]);
+//     setImageStyle("");
+//     setYoutubeUrl("");
+//     setShowYoutubeInput(false);
+//     // Reset the generated image URL if you maintain it locally
+//     // setGeneratedImageUrl(undefined); // Optional if managed outside react-query
+//   };
+
+//   return (
+//     <Box
+//       component="form"
+//       sx={{
+//         p: 3,
+//         borderRadius: 2,
+//         boxShadow: 3,
+//         backgroundColor: theme.palette.background.paper,
+//         color: theme.palette.text.secondary,
+//         maxWidth: 600,
+//         margin: "0 auto",
+//         mt: 5,
+//       }}
+//     >
+//       <Typography
+//         variant="h5"
+//         sx={{ mb: 2, color: theme.palette.text.secondary }}
+//       >
+//         Upload Your Song
+//       </Typography>
+
+//       <Box
+//         height="100%"
+//         width="100%"
+//         maxWidth={360}
+//         {...getRootProps()}
+//         sx={{ border: "1px dashed", padding: 2, textAlign: "center" }}
+//       >
+//         <input {...getInputProps()} />
+//         <Button
+//           component="span"
+//           variant="outlined"
+//           startIcon={<CloudUploadIcon />}
+//           disabled={!!file || isDownloading}
+//         >
+//           {file ? file.name : "Drag and drop audio here"}
+//         </Button>
+//       </Box>
+
+//       <Button
+//         variant="contained"
+//         onClick={() => setShowYoutubeInput(!showYoutubeInput)}
+//         sx={{ mt: 2, width: "100%" }}
+//       >
+//         Generate Song from YouTube
+//       </Button>
+
+//       {showYoutubeInput && (
+//         <Box>
+//           <TextField
+//             label="YouTube URL"
+//             fullWidth
+//             value={youtubeUrl}
+//             onChange={(e) => setYoutubeUrl(e.target.value)}
+//             sx={{ mt: 2 }}
+//             disabled={isDownloading || !!file}
+//           />
+//           <Button
+//             variant="contained"
+//             onClick={() => downloadFromYoutube(youtubeUrl)}
+//             sx={{ mt: 2, width: "100%" }}
+//             disabled={!youtubeUrl || isDownloading || !!file}
+//           >
+//             {isDownloading ? "Downloading..." : "Download from YouTube"}
+//           </Button>
+//         </Box>
+//       )}
+
+//       {file && (
+//         <Stack spacing={2} mt={2}>
+//           <Typography>Area To Focus</Typography>
+//           <Slider
+//             min={0}
+//             step={1}
+//             max={file.duration}
+//             value={focusArea}
+//             onChange={handleSliderChange}
+//             valueLabelDisplay="auto"
+//             valueLabelFormat={formatSecondsToTime}
+//           />
+//           <TextField
+//             label="Image Style Description"
+//             multiline
+//             rows={4}
+//             value={imageStyle}
+//             onChange={(e) => setImageStyle(e.target.value)}
+//             sx={{ mt: 2 }}
+//           />
+
+//           {/* Show the progress bar when uploading */}
+//           {isLoading ? (
+//             <LinearProgress sx={{ width: "100%", mt: 2 }} />
+//           ) : (
+//             // {isLoading ? (
+//             //   <LinearProgress
+//             //     variant="determinate"
+//             //     value={progress || 0}
+//             //     sx={{ width: "100%", mt: 2 }}
+//             //   />
+//             <LoadingButton
+//               size="large"
+//               variant="contained"
+//               onClick={handleGenerate}
+//               sx={{ width: "100%", mt: 2 }}
+//               disabled={file === null}
+//             >
+//               Generate
+//             </LoadingButton>
+//           )}
+
+//           {isSuccess && generatedImageUrl && (
+//             <Box sx={{ mt: 2, textAlign: "center" }}>
+//               <Card sx={{ width: 256, margin: "0 auto" }}>
+//                 <CardMedia
+//                   component="img"
+//                   image={generatedImageUrl}
+//                   height={256}
+//                   loading="lazy"
+//                 />
+//               </Card>
+//               <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
+//                 <Button variant="contained" onClick={handleDownload}>
+//                   Download
+//                 </Button>
+//                 <Button variant="contained" onClick={handleAddToGallery}>
+//                   Add to Gallery
+//                 </Button>
+//                 <Button variant="contained" onClick={handleNewSong}>
+//                   New Song
+//                 </Button>
+//               </Stack>
+//             </Box>
+//           )}
+//         </Stack>
+//       )}
+//     </Box>
+//   );
+// }
 import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -11,6 +303,7 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import useUploadAudio from "@/Components/CreationDialog/useUploadAudio";
+import { useYoutubeDownload } from "@/hooks/useYoutubeDownload";
 
 interface AudioFile extends File {
   duration: number;
@@ -26,45 +319,28 @@ export default function Upload() {
   const [file, setFile] = useState<AudioFile | null>(null);
   const [focusArea, setFocusArea] = useState<[number, number]>([0, 1]);
   const [imageStyle, setImageStyle] = useState<string>("");
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<
-    string | undefined
-  >(undefined);
-  //TODO
-  const [isLoading, setIsLoading] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState<string>("");
+  const [showYoutubeInput, setShowYoutubeInput] = useState<boolean>(false);
 
-  const { uploadAudio, reset, status, progress } = useUploadAudio();
+  const { uploadAudio, isLoading, isSuccess, progress, generatedImageUrl } =
+    useUploadAudio();
+  const {
+    isLoading: isDownloading,
+    downloadedFile,
+    downloadFromYoutube,
+  } = useYoutubeDownload();
 
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     accept: {
       "audio/mpeg": [".mp3"],
     },
-    onDrop: (acceptedFiles, fileRejections) => {
-      if (fileRejections.length > 0) {
-        alert("Unsupported file type. Please upload an MP3 file.");
-        return;
-      }
-
+    onDrop: (acceptedFiles) => {
       if (acceptedFiles.length === 0) {
         console.log("No files accepted");
         return;
       }
-
-      const selectedFile = acceptedFiles[0];
-      const preview = URL.createObjectURL(selectedFile);
-      const audio = document.createElement("audio");
-
-      audio.src = preview;
-      audio.addEventListener("loadedmetadata", () => {
-        console.log("Audio metadata loaded");
-        setFile(Object.assign(selectedFile, { duration: audio.duration }));
-        URL.revokeObjectURL(preview);
-      });
-
-      audio.addEventListener("error", () => {
-        console.error("Error loading audio file");
-        URL.revokeObjectURL(preview);
-      });
+      handleFileUpload(acceptedFiles[0]);
     },
   });
 
@@ -75,6 +351,28 @@ export default function Upload() {
       setFocusArea([0, 1]);
     }
   }, [file]);
+
+  useEffect(() => {
+    if (downloadedFile) {
+      handleFileUpload(downloadedFile);
+    }
+  }, [downloadedFile]);
+
+  const handleFileUpload = (selectedFile: File) => {
+    const preview = URL.createObjectURL(selectedFile);
+    const audio = document.createElement("audio");
+
+    audio.src = preview;
+    audio.addEventListener("loadedmetadata", () => {
+      setFile(Object.assign(selectedFile, { duration: audio.duration }));
+      URL.revokeObjectURL(preview);
+    });
+
+    audio.addEventListener("error", () => {
+      console.error("Error loading audio file");
+      URL.revokeObjectURL(preview);
+    });
+  };
 
   function formatSecondsToTime(seconds: number) {
     if (file !== null && file.duration > 3600) {
@@ -119,44 +417,40 @@ export default function Upload() {
     }
   };
 
-  //TODO
   const handleGenerate = () => {
     if (file === null) return;
-    setIsLoading(true);
-    setGeneratedImageUrl(undefined);
-    // Simulate a network request or processing time with setTimeout
-    setTimeout(() => {
-      setIsLoading(false);
-      setGeneratedImageUrl(
-        "https://images.unsplash.com/photo-1712464857903-57e1393d471d"
-      );
-      // Call uploadAudio to start the image generation process
-      uploadAudio({ audio: file, focusArea, imageStyle });
-    }, 2000);
+    uploadAudio({ audio: file, focusArea, imageStyle });
   };
 
-  function handleDownload() {
-    if (file === null || generatedImageUrl === undefined) return;
+  const handleDownload = () => {
+    if (downloadedFile) {
+      const url = URL.createObjectURL(downloadedFile);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadedFile.name; // Sets the file name
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url); // Clean up the object URL
+    }
+  };
 
-    saveAs(generatedImageUrl, file.name);
-  }
-
-  function handleGoToGallery() {
+  const handleAddToGallery = () => {
+    // Simulate adding to gallery (actual backend integration needed)
+    alert("Image added to gallery!");
     navigate("/gallery");
-    reset();
+  };
+
+  const handleNewSong = () => {
+    // Reset all states to start fresh
     setFile(null);
+    setFocusArea([0, 1]);
     setImageStyle("");
-    setGeneratedImageUrl(undefined);
-  }
-  // TODO
-  // useEffect(() => {
-  //   if (status === "success" && generatedImageUrl) {
-  //     // Simulate setting a generated image URL after successful upload
-  //     setGeneratedImageUrl(
-  //       "https://images.unsplash.com/photo-1712464857903-57e1393d471d"
-  //     );
-  //   }
-  // }, [status, generatedImageUrl]);
+    setYoutubeUrl("");
+    setShowYoutubeInput(false);
+    // Reset the generated image URL if you maintain it locally
+    // setGeneratedImageUrl(undefined); // Optional if managed outside react-query
+  };
 
   return (
     <Box
@@ -191,11 +485,40 @@ export default function Upload() {
           component="span"
           variant="outlined"
           startIcon={<CloudUploadIcon />}
-          disabled={!!file}
+          disabled={!!file || isDownloading}
         >
           {file ? file.name : "Drag and drop audio here"}
         </Button>
       </Box>
+
+      <Button
+        variant="contained"
+        onClick={() => setShowYoutubeInput(!showYoutubeInput)}
+        sx={{ mt: 2, width: "100%" }}
+      >
+        Generate Song from YouTube
+      </Button>
+
+      {showYoutubeInput && (
+        <Box>
+          <TextField
+            label="YouTube URL"
+            fullWidth
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            sx={{ mt: 2 }}
+            disabled={isDownloading || !!file}
+          />
+          <Button
+            variant="contained"
+            onClick={() => downloadFromYoutube(youtubeUrl)}
+            sx={{ mt: 2, width: "100%" }}
+            disabled={!youtubeUrl || isDownloading || !!file}
+          >
+            {isDownloading ? "Downloading..." : "Download from YouTube"}
+          </Button>
+        </Box>
+      )}
 
       {file && (
         <Stack spacing={2} mt={2}>
@@ -218,14 +541,15 @@ export default function Upload() {
             sx={{ mt: 2 }}
           />
 
-          {/* {status === "pending" ? */}
           {isLoading ? (
-            <LinearProgress
-              sx={{ width: "100%", mt: 2 }}
-              // variant={progress !== 100 ? "determinate" : "indeterminate"}
-              // value={progress}
-            />
+            <LinearProgress sx={{ width: "100%", mt: 2 }} />
           ) : (
+            // {isLoading ? (
+            //   <LinearProgress
+            //     variant="determinate"
+            //     value={progress || 0}
+            //     sx={{ width: "100%", mt: 2 }}
+            //   />
             <LoadingButton
               size="large"
               variant="contained"
@@ -237,13 +561,12 @@ export default function Upload() {
             </LoadingButton>
           )}
 
-          {/* status === "success" && */}
-          {generatedImageUrl && (
+          {isSuccess && generatedImageUrl && (
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <Card sx={{ width: 256, margin: "0 auto" }}>
                 <CardMedia
                   component="img"
-                  image={`${generatedImageUrl}?auto=format&fit=crop&w=286`}
+                  image={generatedImageUrl}
                   height={256}
                   loading="lazy"
                 />
@@ -252,8 +575,11 @@ export default function Upload() {
                 <Button variant="contained" onClick={handleDownload}>
                   Download
                 </Button>
-                <Button variant="contained" onClick={handleGoToGallery}>
-                  Go to Gallery
+                <Button variant="contained" onClick={handleAddToGallery}>
+                  Add to Gallery
+                </Button>
+                <Button variant="contained" onClick={handleNewSong}>
+                  New Song
                 </Button>
               </Stack>
             </Box>

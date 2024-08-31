@@ -11,15 +11,25 @@ export interface FileArgs {
 export default function useUploadAudio() {
   const [progress, setProgress] = useState<number | null>(0);
 
-  const {
-    data: generatedImageUrl,
-    mutate: uploadAudio,
-    mutateAsync: uploadAudioAsync,
-    ...restUseMutation
-  } = useMutation<string, AxiosError, FileArgs>({
-    mutationFn: ({ audio, imageStyle, focusArea }) => {
+  const { data, mutate, isPending, isSuccess } = useMutation<
+    string,
+    AxiosError,
+    FileArgs
+  >({
+    mutationFn: async ({ audio, imageStyle, focusArea }) => {
+      // Simulate backend processing with a timeout
+      return new Promise<string>((resolve) => {
+        setTimeout(() => {
+          resolve(
+            "https://images.unsplash.com/photo-1712464857903-57e1393d471d"
+          );
+        }, 2000); // Simulate a 2-second processing delay
+      });
+
+      // When backend is ready, replace the above code with the actual request:
+      /*
       return axios.post(
-        "DUMMY_URL",
+        "BACKEND_URL",
         {
           start: focusArea[0],
           end: focusArea[1],
@@ -39,6 +49,7 @@ export default function useUploadAudio() {
           },
         }
       );
+      */
     },
     onMutate: () => {
       setProgress(0);
@@ -46,10 +57,10 @@ export default function useUploadAudio() {
   });
 
   return {
-    generatedImageUrl,
-    uploadAudio,
-    uploadAudioAsync,
+    generatedImageUrl: data,
+    uploadAudio: mutate,
+    isLoading: isPending,
+    isSuccess,
     progress,
-    ...restUseMutation,
   };
 }
