@@ -11,7 +11,8 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import { useNavigate } from "react-router-dom";
 import { saveAs } from "file-saver";
 import useUploadAudio from "@/Components/CreationDialog/useUploadAudio";
-import { useYoutubeDownload } from "@/hooks/useYoutubeDownload";
+import useYoutubeDownload from "@/hooks/useYoutubeDownload";
+import audioToImage from "@/../public/audio_to_image.svg";
 
 interface AudioFile extends File {
   duration: number;
@@ -30,12 +31,17 @@ export default function Upload() {
   const [youtubeUrl, setYoutubeUrl] = useState<string>("");
   const [showYoutubeInput, setShowYoutubeInput] = useState<boolean>(false);
 
-  const { uploadAudio, isLoading, isSuccess, progress, generatedImageUrl } =
-    useUploadAudio();
   const {
-    isLoading: isDownloading,
-    downloadedFile,
+    uploadAudio,
+    isLoading,
+    isSuccess,
+    generatedImageUrl: mp3GeneratedImageUrl,
+  } = useUploadAudio();
+  const {
     downloadFromYoutube,
+    isLoading: isDownloading,
+    isSuccess: isYoutubeSuccess,
+    generatedImageUrl: youtubeGeneratedImageUrl,
   } = useYoutubeDownload();
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -59,12 +65,6 @@ export default function Upload() {
       setFocusArea([0, 1]);
     }
   }, [file]);
-
-  useEffect(() => {
-    if (downloadedFile) {
-      handleFileUpload(downloadedFile);
-    }
-  }, [downloadedFile]);
 
   const handleFileUpload = (selectedFile: File) => {
     const preview = URL.createObjectURL(selectedFile);
@@ -130,10 +130,16 @@ export default function Upload() {
     uploadAudio({ audio: file, focusArea, imageStyle });
   };
 
+  const handleYoutubeGenerate = () => {
+    if (!youtubeUrl) return;
+    downloadFromYoutube(youtubeUrl, imageStyle);
+  };
+
   const handleDownload = async () => {
-    if (!generatedImageUrl) return;
+    const imageUrl = mp3GeneratedImageUrl || youtubeGeneratedImageUrl;
+    if (!imageUrl) return;
     try {
-      const response = await fetch(generatedImageUrl, { mode: "cors" });
+      const response = await fetch(imageUrl, { mode: "cors" });
       const blob = await response.blob();
       saveAs(blob, "generated-image.jpg");
     } catch (error) {
@@ -154,125 +160,144 @@ export default function Upload() {
     setImageStyle("");
     setYoutubeUrl("");
     setShowYoutubeInput(false);
-    // Reset the generated image URL if you maintain it locally
-    // setGeneratedImageUrl(undefined); // Optional if managed outside react-query
   };
 
   return (
-    <Box
-      component="form"
-      sx={{
-        p: 3,
-        borderRadius: 2,
-        boxShadow: 3,
-        backgroundColor: theme.palette.background.paper,
-        color: theme.palette.text.secondary,
-        maxWidth: 600,
-        margin: "0 auto",
-        mt: 5,
-      }}
-    >
-      <Typography
-        variant="h5"
-        sx={{ mb: 2, color: theme.palette.text.secondary }}
-      >
-        Upload Your Song
-      </Typography>
-
+    <>
       <Box
-        height="100%"
-        width="100%"
-        maxWidth={360}
-        {...getRootProps()}
-        sx={{ border: "1px dashed", padding: 2, textAlign: "center" }}
+        component="form"
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          boxShadow: 3,
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.secondary,
+          maxWidth: 600,
+          margin: "0 auto",
+          mt: 5,
+          textAlign: "center",
+        }}
       >
-        <input {...getInputProps()} />
-        <Button
-          component="span"
-          variant="outlined"
-          startIcon={<CloudUploadIcon />}
-          disabled={!!file || isDownloading}
+        <Typography
+          variant="h5"
+          sx={{
+            mb: 2,
+            color: theme.palette.text.secondary,
+            textAlign: "center",
+          }}
         >
-          {file ? file.name : "Drag and drop audio here"}
-        </Button>
-      </Box>
+          Upload Your Song
+        </Typography>
 
-      <Button
-        variant="contained"
-        onClick={() => setShowYoutubeInput(!showYoutubeInput)}
-        sx={{ mt: 2, width: "100%" }}
-      >
-        Generate Song from YouTube
-      </Button>
-
-      {showYoutubeInput && (
-        <Box>
-          <TextField
-            label="YouTube URL"
-            fullWidth
-            value={youtubeUrl}
-            onChange={(e) => setYoutubeUrl(e.target.value)}
-            sx={{ mt: 2 }}
-            disabled={isDownloading || !!file}
-          />
-          <Button
-            variant="contained"
-            onClick={() => downloadFromYoutube(youtubeUrl)}
-            sx={{ mt: 2, width: "100%" }}
-            disabled={!youtubeUrl || isDownloading || !!file}
+        {!showYoutubeInput && (
+          <Box
+            height="100%"
+            width="100%"
+            maxWidth={360}
+            {...getRootProps()}
+            sx={{
+              border: "1px dashed",
+              padding: 2,
+              textAlign: "center",
+              mx: "auto",
+              mt: 2,
+            }}
           >
-            {isDownloading ? "Downloading..." : "Download from YouTube"}
-          </Button>
-        </Box>
-      )}
-
-      {file && (
-        <Stack spacing={2} mt={2}>
-          <Typography>Area To Focus</Typography>
-          <Slider
-            min={0}
-            step={1}
-            max={file.duration}
-            value={focusArea}
-            onChange={handleSliderChange}
-            valueLabelDisplay="auto"
-            valueLabelFormat={formatSecondsToTime}
-          />
-          <TextField
-            label="Image Style Description"
-            multiline
-            rows={4}
-            value={imageStyle}
-            onChange={(e) => setImageStyle(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-
-          {isLoading ? (
-            <LinearProgress sx={{ width: "100%", mt: 2 }} />
-          ) : (
-            // {isLoading ? (
-            //   <LinearProgress
-            //     variant="determinate"
-            //     value={progress || 0}
-            //     sx={{ width: "100%", mt: 2 }}
-            //   />
-            <LoadingButton
-              size="large"
-              variant="contained"
-              onClick={handleGenerate}
-              sx={{ width: "100%", mt: 2 }}
-              disabled={file === null}
+            <input {...getInputProps()} />
+            <Button
+              component="span"
+              variant="outlined"
+              startIcon={<CloudUploadIcon />}
+              disabled={!!file || isDownloading}
             >
-              Generate
-            </LoadingButton>
-          )}
+              {file ? file.name : "Drag and drop audio here"}
+            </Button>
+          </Box>
+        )}
 
-          {isSuccess && generatedImageUrl && (
+        <Button
+          variant="contained"
+          onClick={() => setShowYoutubeInput(!showYoutubeInput)}
+          sx={{ mt: 2, width: "100%" }}
+        >
+          {showYoutubeInput
+            ? "Back to MP3 Upload"
+            : "Generate Song from YouTube"}
+        </Button>
+
+        {showYoutubeInput && (
+          <Box>
+            <TextField
+              label="YouTube URL"
+              fullWidth
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              sx={{ mt: 2 }}
+              disabled={isDownloading || !!file}
+            />
+            <TextField
+              label="Image Style Description"
+              multiline
+              rows={4}
+              value={imageStyle}
+              onChange={(e) => setImageStyle(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+            <Button
+              variant="contained"
+              onClick={handleYoutubeGenerate}
+              sx={{ mt: 2, width: "100%" }}
+              disabled={!youtubeUrl || isDownloading}
+            >
+              {isDownloading ? "Generating..." : "Generate from YouTube"}
+            </Button>
+          </Box>
+        )}
+
+        {file && !showYoutubeInput && (
+          <Stack spacing={2} mt={2}>
+            <Typography>Area To Focus</Typography>
+            <Slider
+              min={0}
+              step={1}
+              max={file.duration}
+              value={focusArea}
+              onChange={handleSliderChange}
+              valueLabelDisplay="auto"
+              valueLabelFormat={formatSecondsToTime}
+            />
+            <TextField
+              label="Image Style Description"
+              multiline
+              rows={4}
+              value={imageStyle}
+              onChange={(e) => setImageStyle(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+
+            {isLoading ? (
+              <LinearProgress sx={{ width: "100%", mt: 2 }} />
+            ) : (
+              <LoadingButton
+                size="large"
+                variant="contained"
+                onClick={handleGenerate}
+                sx={{ width: "100%", mt: 2 }}
+                disabled={!file}
+              >
+                Generate
+              </LoadingButton>
+            )}
+          </Stack>
+        )}
+
+        {(isSuccess || isYoutubeSuccess) &&
+          (mp3GeneratedImageUrl || youtubeGeneratedImageUrl) && (
             <Box sx={{ mt: 2, textAlign: "center" }}>
               <Card sx={{ width: 256, margin: "0 auto" }}>
                 <CardMedia
                   component="img"
-                  image={generatedImageUrl}
+                  image={mp3GeneratedImageUrl || youtubeGeneratedImageUrl}
                   height={256}
                   loading="lazy"
                 />
@@ -290,8 +315,17 @@ export default function Upload() {
               </Stack>
             </Box>
           )}
-        </Stack>
+      </Box>
+
+      {!file && !showYoutubeInput && (
+        <Box sx={{ mt: 8, mb: 8, textAlign: "center" }}>
+          <img
+            src={audioToImage}
+            alt="Lunar: Visual representation of audio processing"
+            style={{ width: "550px", height: "auto" }}
+          />
+        </Box>
       )}
-    </Box>
+    </>
   );
 }

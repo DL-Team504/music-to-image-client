@@ -1,56 +1,49 @@
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 import axios from "axios";
 
-type YoutubeDownloadResponse = {
-  blob: Blob;
-  filename: string;
-};
+interface YoutubeArgs {
+  youtubeUrl: string;
+  imageStyle?: string;
+}
 
-export function useYoutubeDownload() {
-  const [downloadedFile, setDownloadedFile] = useState<File | null>(null);
-
-  const { mutate, isPending } = useMutation<
-    YoutubeDownloadResponse,
+export default function useYoutubeDownload() {
+  const { data, mutate, isPending, isSuccess } = useMutation<
+    string,
     Error,
-    string
+    YoutubeArgs
   >({
-    mutationFn: async (youtubeUrl: string) => {
-      try {
-        const response = await axios.post(
-          "http://localhost:8000/api/download-youtube-audio",
-          { youtube_url: youtubeUrl },
+    mutationFn: async ({ youtubeUrl, imageStyle }) => {
+      return axios
+        .post(
+          "http://193.106.55.50:8888/generate-image",
           {
-            responseType: "blob",
+            youtube_url: youtubeUrl,
+            start: 0,
+            end: 60,
+            image_style: imageStyle,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        );
-
-        const contentDisposition = response.headers["content-disposition"];
-        const filename = contentDisposition
-          ? contentDisposition.split("filename=")[1]
-          : "downloaded-audio.mp3";
-        return { blob: response.data, filename };
-      } catch (error) {
-        throw new Error("Failed to download the audio from YouTube.");
-      }
-    },
-    onSuccess: ({ blob, filename }) => {
-      const file = new File([blob], filename, { type: "audio/mpeg" });
-      setDownloadedFile(file);
+        )
+        .then((response) => response.data);
     },
     onError: (error) => {
-      console.error("Failed to download audio from YouTube:", error);
-      alert("Failed to download audio from YouTube. Please try again.");
+      console.error("Failed to generate audio from YouTube:", error);
+      alert("Failed to generate audio from YouTube. Please try again.");
     },
   });
 
-  const downloadFromYoutube = (youtubeUrl: string) => {
-    mutate(youtubeUrl);
+  const downloadFromYoutube = (youtubeUrl: string, imageStyle?: string) => {
+    mutate({ youtubeUrl, imageStyle });
   };
 
   return {
-    isLoading: isPending,
-    downloadedFile,
+    generatedImageUrl: data,
     downloadFromYoutube,
+    isLoading: isPending,
+    isSuccess,
   };
 }

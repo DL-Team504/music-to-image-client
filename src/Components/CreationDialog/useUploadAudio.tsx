@@ -17,19 +17,8 @@ export default function useUploadAudio() {
     FileArgs
   >({
     mutationFn: async ({ audio, imageStyle, focusArea }) => {
-      // Simulate backend processing with a timeout
-      return new Promise<string>((resolve) => {
-        setTimeout(() => {
-          resolve(
-            "https://images.unsplash.com/photo-1712464857903-57e1393d471d"
-          );
-        }, 2000); // Simulate a 2-second processing delay
-      });
-
-      // When backend is ready, replace the above code with the actual request:
-      /*
       return axios.post(
-        "BACKEND_URL",
+        "http://193.106.55.50:8888/generate-image",
         {
           start: focusArea[0],
           end: focusArea[1],
@@ -49,7 +38,6 @@ export default function useUploadAudio() {
           },
         }
       );
-      */
     },
     onMutate: () => {
       setProgress(0);
