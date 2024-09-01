@@ -15,7 +15,7 @@ export default function useYoutubeDownload() {
     mutationFn: async ({ youtubeUrl, imageStyle }) => {
       return axios
         .post(
-          "http://lunarbeats.cs.colman.ac.il:8888/generate-image",
+          "http://lunarbeats.cs.colman.ac.il:8888/generate-image/yt",
           {
             youtube_url: youtubeUrl,
             start: 0,

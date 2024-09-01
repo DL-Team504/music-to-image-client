@@ -19,7 +19,7 @@ export default function useUploadAudio() {
     mutationFn: async ({ audio, imageStyle, focusArea }) => {
       return axios
         .post(
-          "http://lunarbeats.cs.colman.ac.il:8888/generate-image",
+          "http://lunarbeats.cs.colman.ac.il:8888/generate-image/file",
           {
             start: focusArea[0],
             end: focusArea[1],
