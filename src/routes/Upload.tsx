@@ -298,7 +298,9 @@ export default function Upload() {
               <Card sx={{ width: 256, margin: "0 auto" }}>
                 <CardMedia
                   component="img"
-                  image={mp3GeneratedImageUrl || youtubeGeneratedImageUrl}
+                  src={`http://lunarbeats.cs.colman.ac.il:8888/${
+                    mp3GeneratedImageUrl || youtubeGeneratedImageUrl
+                  }`}
                   height={256}
                   loading="lazy"
                 />

@@ -17,27 +17,29 @@ export default function useUploadAudio() {
     FileArgs
   >({
     mutationFn: async ({ audio, imageStyle, focusArea }) => {
-      return axios.post(
-        "http://193.106.55.50:8888/generate-image",
-        {
-          start: focusArea[0],
-          end: focusArea[1],
-          image_style: imageStyle,
-          upload_file: audio,
-        },
-        {
-          onUploadProgress: (ev) => {
-            if (ev.total !== undefined) {
-              setProgress(Math.round((ev.loaded * 100) / ev.total));
-            } else {
-              setProgress(null);
-            }
+      return axios
+        .post(
+          "http://lunarbeats.cs.colman.ac.il:8888/generate-image",
+          {
+            start: focusArea[0],
+            end: focusArea[1],
+            image_style: imageStyle,
+            upload_file: audio,
           },
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+          {
+            onUploadProgress: (ev) => {
+              if (ev.total !== undefined) {
+                setProgress(Math.round((ev.loaded * 100) / ev.total));
+              } else {
+                setProgress(null);
+              }
+            },
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        )
+        .then((response) => response.data);
     },
     onMutate: () => {
       setProgress(0);

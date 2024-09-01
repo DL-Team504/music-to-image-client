@@ -12,7 +12,7 @@ type GeneratedImage = {
 
 const fetchImages = async () => {
   const res = await axios.get<GeneratedImage[]>(
-    "http://localhost:8000/gallery/images"
+    "http://lunarbeats.cs.colman.ac.il:8888/gallery/images"
   );
   return res.data;
 };
@@ -37,7 +37,7 @@ export default function Gallery() {
           images.map((image, index) => (
             <Grid lg={3} md={4} sm={6} key={index}>
               <SongCard
-                imgSrc={image.path}
+                imgSrc={`http://lunarbeats.cs.colman.ac.il:8888/${image.path}`}
                 title={image.title}
                 creationDate={image.creation_date}
               />

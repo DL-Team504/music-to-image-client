@@ -49,7 +49,7 @@ export default function SongCard(props: SongCardProps) {
       />
       <CardMedia
         component="img"
-        image={`${imgSrc}?auto=format&fit=crop&w=286`}
+        src={imgSrc}
         height={194}
         loading="lazy"
       />
